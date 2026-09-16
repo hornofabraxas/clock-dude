@@ -1,0 +1,9 @@
+build/
+*.pbw
+test/host/test_game
+test/host/*.dSYM/
+.DS_Store
+.lock-waf*
+
+# clang static-analyzer output
+/*.plist

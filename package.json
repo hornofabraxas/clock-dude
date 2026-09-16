@@ -1,0 +1,34 @@
+{
+  "name": "clock-dude",
+  "author": "OmgSlayKween",
+  "version": "1.0",
+  "license": "MIT",
+  "keywords": [
+    "pebble-app"
+  ],
+  "private": true,
+  "pebble": {
+    "displayName": "Clock Dude",
+    "uuid": "b8aa0ee3-3168-477f-8b5e-12e8b453fd05",
+    "sdkVersion": "3",
+    "targetPlatforms": [
+      "emery",
+      "gabbro"
+    ],
+    "watchapp": {
+      "watchface": false,
+      "hiddenApp": false,
+      "onlyShownOnCommunication": false
+    },
+    "resources": {
+      "media": [
+        {
+          "type": "bitmap",
+          "name": "IMAGE_MENU_ICON",
+          "file": "images/menu_icon.png",
+          "menuIcon": true
+        }
+      ]
+    }
+  }
+}

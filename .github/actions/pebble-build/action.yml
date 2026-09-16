@@ -1,0 +1,57 @@
+name: Build Clock Dude
+description: >
+  Run the host rule tests, install the Pebble toolchain and SDK (SDK cached
+  across runs), build both watch targets, and enforce the app-image ceiling.
+  Shared by ci.yml and release.yml so the build steps live in one place.
+
+inputs:
+  sdk-version:
+    description: Pebble SDK version to install and cache (pinned for reproducible, cacheable builds).
+    default: "4.33.1"
+
+runs:
+  using: composite
+  steps:
+    # The rules in src/c/game.c have no SDK dependency, so this needs nothing
+    # but a C compiler and runs before the slow toolchain install.
+    - name: Host rule tests (sanitized)
+      shell: bash
+      run: make -C test/host run
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v10.0.1
+      with:
+        enable-cache: false
+
+    - name: Install Pebble toolchain
+      shell: bash
+      run: |
+        set -euo pipefail
+        uv tool install pebble-tool
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+    - name: Cache Pebble SDK
+      uses: actions/cache@v6
+      with:
+        path: ~/.local/share/pebble-sdk
+        key: pebble-sdk-${{ runner.os }}-${{ inputs.sdk-version }}
+
+    - name: Install Pebble SDK (${{ inputs.sdk-version }})
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ -d "$HOME/.local/share/pebble-sdk/SDKs/${{ inputs.sdk-version }}" ]; then
+          echo "Pebble SDK ${{ inputs.sdk-version }} restored from cache; skipping install."
+        else
+          pebble sdk install "${{ inputs.sdk-version }}"
+        fi
+        pebble sdk list
+
+    # One source tree, both watches: emery is the Time 2, gabbro the Round 2.
+    - name: Build (emery and gabbro)
+      shell: bash
+      run: pebble build
+
+    - name: Check app-image size ceiling
+      shell: bash
+      run: bash scripts/check-appimage-size.sh
